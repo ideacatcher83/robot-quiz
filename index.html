@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Square Robot Quiz - Ultra Compact</title>
+  <title>Square Robot Quiz - Compact Layout</title>
   <style>
     :root {
       --bg-light: #f1f7f9;
@@ -21,70 +21,75 @@
       height: 100vh;
     }
 
-    /* ゲーム全体を80vhに収めるラッパー */
+    /* 全体を80vhに収め、さらにスリムに */
     #game-wrapper {
       width: 95vw;
       height: 80vh;
-      max-width: 400px; /* 横に広がりすぎないように制限 */
+      max-width: 380px; 
       display: flex;
       flex-direction: column;
       background: white;
       border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       overflow: hidden;
       border: 2px solid var(--border-color);
     }
 
     #quiz-area {
-      flex: 0 0 20%; /* ヘッダーの比率 */
+      flex: 0 0 18%; /* ヘッダーを少し低く */
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       background-color: #ffffff;
       border-bottom: 1px solid var(--border-color);
     }
-    #title-text { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
-    #question-text { font-size: clamp(18px, 5vw, 24px); font-weight: bold; color: #333; margin-top: 5px; }
+    #title-text { font-size: 11px; color: #999; letter-spacing: 1px; }
+    #question-text { font-size: clamp(18px, 5vw, 22px); font-weight: bold; color: #333; margin-top: 3px; }
 
     .container { 
       flex: 1;
       display: grid; 
       grid-template-columns: repeat(3, 1fr); 
       grid-template-rows: repeat(3, 1fr); 
-      padding: 10px;
-      gap: 8px;
+      padding: 5px; /* 外側の余白を削減 */
+      gap: 5px; /* 隙間をさらに狭く */
     }
 
     .grid-item { 
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       position: relative;
+      background: #fafafa; /* 枠を少し分かりやすく */
+      border-radius: 10px;
+      border: 1px solid #eee;
+      height: 100%; /* 親のグリッドセルいっぱいに広げる */
     }
 
-    /* ロボットのデザインをさらにスケールダウン */
+    /* ロボット自体の大きさは維持しつつ、配置を最適化 */
     .robot-unit {
-      width: 70px; height: 62px;
+      width: 68px; height: 60px;
       background-color: var(--robot-color);
       border: 2.5px solid #333;
       border-radius: 12px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       position: relative; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       cursor: pointer; z-index: 5;
+      margin-top: 5px; /* 上のテキストとの距離 */
     }
 
     .robot-unit::before {
-      content: ""; position: absolute; top: -8px; width: 22px; height: 5px;
+      content: ""; position: absolute; top: -8px; width: 20px; height: 5px;
       background-color: #FFD700; border: 2px solid #333; border-radius: 3px;
     }
-    .ears { position: absolute; width: 85px; height: 20px; display: flex; justify-content: space-between; z-index: -1; }
-    .ear { width: 5px; height: 20px; background-color: var(--robot-color); border: 2.5px solid #333; border-radius: 3px; }
-    .feet { position: absolute; bottom: -6px; width: 30px; display: flex; justify-content: space-between; }
-    .foot { width: 8px; height: 4px; background-color: #444; border-radius: 1px; }
+    .ears { position: absolute; width: 82px; height: 20px; display: flex; justify-content: space-between; z-index: -1; }
+    .ear { width: 5px; height: 18px; background-color: var(--robot-color); border: 2.2px solid #333; border-radius: 3px; }
+    .feet { position: absolute; bottom: -6px; width: 28px; display: flex; justify-content: space-between; }
+    .foot { width: 7px; height: 4px; background-color: #444; border-radius: 1px; }
     
     .eye-row { display: flex; gap: 10px; margin-bottom: 4px; }
     .eye { width: 14px; height: 14px; background-color: #000; border-radius: 50%; position: relative; }
     .eye::after { content: ""; position: absolute; top: 1.5px; left: 2px; width: 4px; height: 4px; background: #fff; border-radius: 50%; }
     .mouth { width: 18px; height: 3px; background-color: #333; border-radius: 2px; }
 
-    /* 正解・不正解 */
-    .robot-unit.correct { transform: scale(1.1); }
+    /* アニメーション演出 */
+    .robot-unit.correct { transform: scale(1.1); box-shadow: 0 0 15px var(--robot-color); }
     .robot-unit.correct .eye { background: transparent; }
     .robot-unit.correct .eye::before {
       content: ""; width: 14px; height: 14px; border-top: 3.5px solid #000; border-radius: 50%; position: absolute; top: 3px;
@@ -114,7 +119,7 @@
     }
     #start-btn {
       padding: 15px 40px; background: #FF4757; color: white; border: none; border-radius: 30px;
-      font-size: 24px; font-weight: bold; cursor: pointer;
+      font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 0 #cf3544;
     }
   </style>
 </head>
@@ -151,3 +156,37 @@
     let audioCtx = null;
 
     function loadVoices() {
+      const voices = window.speechSynthesis.getVoices();
+      nativeVoice = voices.find(v => v.name.includes('Google US English')) ||
+                    voices.find(v => v.lang === 'en-US' && v.name.includes('Samantha')) ||
+                    voices.find(v => v.lang === 'en-US');
+    }
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    function playSuccessSound() {
+      if (!audioCtx) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const playTone = (freq, startTime, duration) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0.05, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(startTime); osc.stop(startTime + duration);
+      };
+      const now = audioCtx.currentTime;
+      playTone(523.25, now, 0.2); playTone(659.25, now + 0.1, 0.2); 
+      playTone(783.99, now + 0.2, 0.2); playTone(1046.50, now + 0.3, 0.4); 
+    }
+
+    function spawnConfetti(parentElement) {
+      const colors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#FF69B4'];
+      for (let i = 0; i < 18; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        const tx = (Math.random() - 0.5) * 120;
+        const ty = (Math.random() - 0.
