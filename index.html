@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>9 Color Robot Quiz - Super Native Voice</title>
+  <title>9 Color Robot Quiz - Compact</title>
   <style>
     :root {
       --bg-light: #f1f7f9;
@@ -12,73 +12,112 @@
     body {
       background-color: var(--bg-light);
       margin: 0;
-      overflow: hidden;
+      overflow: hidden; /* 画面がスクロールしないように固定 */
       font-family: 'Arial Round MT Bold', 'Helvetica', sans-serif;
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: 100vh; /* 画面全体の高さを100%に */
     }
+    
+    /* クイズエリアの高さをさらに低く（15%）調整 */
     #quiz-area {
-      height: 18vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background-color: #ffffff; border-bottom: 2px solid var(--border-color);
+      height: 15vh; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center;
+      background-color: #ffffff; 
+      border-bottom: 2px solid var(--border-color);
       z-index: 10;
+      flex-shrink: 0;
     }
-    #question-text { font-size: 26px; font-weight: bold; color: #000; text-align: center; padding: 0 10px; }
+    #question-text { 
+      font-size: clamp(20px, 6vw, 28px); /* 画面サイズに合わせて自動調整 */
+      font-weight: bold; 
+      color: #000; 
+      text-align: center; 
+      margin: 0;
+    }
 
+    /* ロボット表示エリアを画面の下部いっぱいに（85%） */
     .container { 
       display: grid; 
       grid-template-columns: 1fr 1fr; 
       grid-template-rows: 1fr 1fr; 
-      height: 82vh; 
-      padding: 15px; 
-      gap: 15px; 
+      height: 85vh; 
+      padding: 10px; 
+      gap: 10px; 
       box-sizing: border-box;
+      flex-grow: 1;
     }
+    
     .grid-item { 
-      background: white; border-radius: 20px; border: 2px solid var(--border-color);
-      display: flex; flex-direction: column; align-items: center; justify-content: center; 
-      position: relative; overflow: visible;
+      background: white; 
+      border-radius: 15px; 
+      border: 2px solid var(--border-color);
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      position: relative;
+      padding: 5px;
     }
 
-    .color-label { font-weight: bold; font-size: 18px; margin-bottom: 12px; color: #555; }
+    /* 文字とロボットの間隔を狭くして収まりを良くする */
+    .color-label { 
+      font-weight: bold; 
+      font-size: 16px; 
+      margin-bottom: 8px; 
+      color: #444; 
+    }
 
     .robot-unit {
-      width: 100px; height: 95px;
+      width: clamp(80px, 25vw, 110px); /* 画面幅に合わせて伸縮 */
+      height: clamp(75px, 22vw, 100px);
       background-color: var(--robot-color);
-      border: 4px solid #333;
-      border-radius: 22px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      position: relative; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      cursor: pointer; z-index: 5;
+      border: 3.5px solid #333;
+      border-radius: 20px;
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center;
+      position: relative; 
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer; 
+      z-index: 5;
     }
 
+    /* 装飾パーツのサイズも微調整 */
     .robot-unit::before {
-      content: ""; position: absolute; top: -12px; width: 35px; height: 8px;
-      background-color: #FFD700; border: 3px solid #333; border-radius: 5px;
+      content: ""; position: absolute; top: -10px; width: 30px; height: 7px;
+      background-color: #FFD700; border: 2.5px solid #333; border-radius: 4px;
     }
-    .ears { position: absolute; width: 120px; height: 35px; display: flex; justify-content: space-between; z-index: -1; }
-    .ear { width: 10px; height: 30px; background-color: var(--robot-color); border: 3.5px solid #333; border-radius: 5px; }
-    .feet { position: absolute; bottom: -8px; width: 45px; display: flex; justify-content: space-between; }
-    .foot { width: 10px; height: 7px; background-color: #444; border-radius: 2px; }
+    .ears { position: absolute; width: calc(100% + 20px); height: 30px; display: flex; justify-content: space-between; z-index: -1; }
+    .ear { width: 8px; height: 28px; background-color: var(--robot-color); border: 3px solid #333; border-radius: 4px; }
+    .feet { position: absolute; bottom: -8px; width: 40px; display: flex; justify-content: space-between; }
+    .foot { width: 10px; height: 6px; background-color: #444; border-radius: 2px; }
 
-    .eye-row { display: flex; gap: 12px; margin-bottom: 8px; }
-    .eye { width: 22px; height: 22px; background-color: #000; border-radius: 50%; position: relative; }
-    .eye::after { content: ""; position: absolute; top: 3px; left: 4px; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
-    .mouth { width: 28px; height: 6px; background-color: #333; border-radius: 3px; }
+    .eye-row { display: flex; gap: 12px; margin-bottom: 5px; }
+    .eye { width: 20px; height: 20px; background-color: #000; border-radius: 50%; position: relative; }
+    .eye::after { content: ""; position: absolute; top: 2px; left: 3px; width: 5px; height: 5px; background: #fff; border-radius: 50%; }
+    .mouth { width: 24px; height: 5px; background-color: #333; border-radius: 3px; }
 
-    .robot-unit.correct { transform: scale(1.1); box-shadow: 0 0 30px var(--robot-color); }
+    /* 正解・不正解演出 */
+    .robot-unit.correct { transform: scale(1.05); box-shadow: 0 0 20px var(--robot-color); }
     .robot-unit.correct .eye { background: transparent; }
-    .robot-unit.correct .eye::before { content: ""; width: 22px; height: 22px; border-top: 5px solid #000; border-radius: 50%; position: absolute; top: 8px; }
-    .robot-unit.correct .mouth { height: 12px; border-radius: 0 0 12px 12px; }
-
+    .robot-unit.correct .eye::before { content: ""; width: 20px; height: 20px; border-top: 5px solid #000; border-radius: 50%; position: absolute; top: 7px; }
+    .robot-unit.correct .mouth { height: 10px; border-radius: 0 0 10px 10px; }
     .robot-unit.wrong { animation: shake 0.4s; }
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 
-    .confetti { position: absolute; width: 10px; height: 10px; pointer-events: none; z-index: 100; animation: fall 1.5s ease-out forwards; }
+    /* 紙吹雪 */
+    .confetti { position: absolute; width: 8px; height: 8px; pointer-events: none; z-index: 100; animation: fall 1.5s ease-out forwards; }
     @keyframes fall { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) rotate(720deg); opacity: 0; } }
 
+    /* スタート画面 */
     #start-overlay { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 2000; }
-    #start-btn { padding: 20px 50px; background: #FF4757; color: white; border: none; border-radius: 50px; font-size: 30px; font-weight: bold; cursor: pointer; }
+    #start-btn { padding: 15px 40px; background: #FF4757; color: white; border: none; border-radius: 50px; font-size: 26px; font-weight: bold; box-shadow: 0 5px 0 #cf3544; }
+    #start-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #cf3544; }
   </style>
 </head>
 <body>
@@ -105,29 +144,23 @@
     let isTransitioning = false;
     let audioCtx = null;
 
-    function setBestVoice() {
+    function loadVoices() {
       const voices = window.speechSynthesis.getVoices();
-      // 高品質な順に検索
-      nativeVoice = voices.find(v => v.name.includes('Google US English')) ||
-                    voices.find(v => v.name.includes('Samantha')) ||
-                    voices.find(v => v.name.includes('Alex')) ||
-                    voices.find(v => v.lang === 'en-US' && v.name.includes('Enhanced')) ||
-                    voices.find(v => v.lang === 'en-US') ||
-                    voices.find(v => v.lang.startsWith('en'));
+      nativeVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || voices.find(v => v.lang === 'en-US');
     }
-
-    window.speechSynthesis.onvoiceschanged = setBestVoice;
-    setBestVoice();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    loadVoices();
 
     function playSuccessSound() {
-      if (!audioCtx) return;
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const playTone = (freq, start, dur) => {
         const o = audioCtx.createOscillator();
         const g = audioCtx.createGain();
-        o.type = 'sine';
         o.frequency.setValueAtTime(freq, start);
-        g.gain.setValueAtTime(0.1, start);
+        g.gain.setValueAtTime(0.05, start);
         g.gain.exponentialRampToValueAtTime(0.01, start + dur);
         o.connect(g); g.connect(audioCtx.destination);
         o.start(start); o.stop(start + dur);
@@ -137,13 +170,13 @@
     }
 
     function spawnConfetti(el) {
-      const colors = ['#FF4757', '#2ED573', '#1E90FF', '#FFA502', '#FF9FF3'];
-      for (let i = 0; i < 30; i++) {
+      const colors = ['#FF4757','#2ED573','#1E90FF','#FFA502','#FF69B4'];
+      for (let i = 0; i < 25; i++) {
         const c = document.createElement('div');
         c.className = 'confetti';
         c.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
-        c.style.setProperty('--tx', `${(Math.random()-0.5)*250}px`);
-        c.style.setProperty('--ty', `${(Math.random()-0.7)*250}px`);
+        c.style.setProperty('--tx', `${(Math.random()-0.5)*200}px`);
+        c.style.setProperty('--ty', `${(Math.random()-0.7)*200}px`);
         c.style.left = '50%'; c.style.top = '50%';
         el.appendChild(c);
         setTimeout(() => c.remove(), 1500);
@@ -153,17 +186,13 @@
     function speak(text) {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      if (!nativeVoice) setBestVoice(); // 発話直前に再確認
-      u.voice = nativeVoice;
-      u.lang = 'en-US';
-      u.rate = 0.85; // 子供向けに少しだけゆっくり
-      u.pitch = 1.1; // 少し明るい声に
+      if (nativeVoice) u.voice = nativeVoice;
+      u.lang = 'en-US'; u.rate = 0.9;
       window.speechSynthesis.speak(u);
     }
 
     document.getElementById('start-btn').addEventListener('click', () => {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      setBestVoice();
       document.getElementById('start-overlay').style.display = 'none';
       nextQuestion();
     });
@@ -188,4 +217,29 @@
             <div class="feet"><div class="foot"></div><div class="foot"></div></div>
           </div>
         `;
-        grid
+        grid.appendChild(div);
+      });
+
+      currentTarget = selectedColors[Math.floor(Math.random() * 4)];
+      document.getElementById('question-text').innerText = `Where is ${currentTarget.name}?`;
+      speak(`Where is ${currentTarget.name}?`);
+    }
+
+    function check(name, el) {
+      if (isTransitioning || el.classList.contains('correct')) return;
+      if (name === currentTarget.name) {
+        isTransitioning = true;
+        el.classList.add('correct');
+        playSuccessSound();
+        spawnConfetti(el);
+        speak(`Hurray! That's ${currentTarget.name}!`);
+        setTimeout(nextQuestion, 3000);
+      } else {
+        el.classList.add('wrong');
+        speak("Oops! Try again.");
+        setTimeout(() => el.classList.remove('wrong'), 500);
+      }
+    }
+  </script>
+</body>
+</html>
