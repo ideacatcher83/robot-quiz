@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>9 Color Robot Quiz</title>
+  <title>9 Color Robot Quiz - Native Voice Fix</title>
   <style>
     :root {
       --bg-light: #f1f7f9;
@@ -23,9 +23,8 @@
       background-color: #ffffff; border-bottom: 2px solid var(--border-color);
       z-index: 10;
     }
-    #question-text { font-size: 28px; font-weight: bold; color: #000; text-align: center; padding: 0 10px; }
+    #question-text { font-size: 26px; font-weight: bold; color: #000; text-align: center; padding: 0 10px; }
 
-    /* 2列2行のグリッド設定 */
     .container { 
       display: grid; 
       grid-template-columns: 1fr 1fr; 
@@ -41,8 +40,7 @@
       position: relative; overflow: visible;
     }
 
-    /* ロボットと文字の距離を調整 */
-    .color-label { font-weight: bold; font-size: 18px; margin-bottom: 15px; color: #555; }
+    .color-label { font-weight: bold; font-size: 18px; margin-bottom: 12px; color: #555; }
 
     .robot-unit {
       width: 100px; height: 95px;
@@ -54,7 +52,6 @@
       cursor: pointer; z-index: 5;
     }
 
-    /* 装飾パーツ */
     .robot-unit::before {
       content: ""; position: absolute; top: -12px; width: 35px; height: 8px;
       background-color: #FFD700; border: 3px solid #333; border-radius: 5px;
@@ -64,13 +61,11 @@
     .feet { position: absolute; bottom: -8px; width: 45px; display: flex; justify-content: space-between; }
     .foot { width: 10px; height: 7px; background-color: #444; border-radius: 2px; }
 
-    /* 顔パーツ */
     .eye-row { display: flex; gap: 12px; margin-bottom: 8px; }
     .eye { width: 22px; height: 22px; background-color: #000; border-radius: 50%; position: relative; }
     .eye::after { content: ""; position: absolute; top: 3px; left: 4px; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
     .mouth { width: 28px; height: 6px; background-color: #333; border-radius: 3px; }
 
-    /* 正解・不正解 */
     .robot-unit.correct { transform: scale(1.1); box-shadow: 0 0 30px var(--robot-color); }
     .robot-unit.correct .eye { background: transparent; }
     .robot-unit.correct .eye::before { content: ""; width: 22px; height: 22px; border-top: 5px solid #000; border-radius: 50%; position: absolute; top: 8px; }
@@ -79,22 +74,20 @@
     .robot-unit.wrong { animation: shake 0.4s; }
     @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
-    /* 紙吹雪 */
     .confetti { position: absolute; width: 10px; height: 10px; pointer-events: none; z-index: 100; animation: fall 1.5s ease-out forwards; }
     @keyframes fall { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) rotate(720deg); opacity: 0; } }
 
     #start-overlay { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 2000; }
-    #start-btn { padding: 20px 50px; background: #FF4757; color: white; border: none; border-radius: 50px; font-size: 30px; font-weight: bold; }
+    #start-btn { padding: 20px 50px; background: #FF4757; color: white; border: none; border-radius: 50px; font-size: 30px; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <div id="quiz-area"><div id="question-text">Tap Start!</div></div>
+  <div id="quiz-area"><div id="question-text">Are you ready?</div></div>
   <div class="container" id="robot-grid"></div>
   <div id="start-overlay"><button id="start-btn">Let's Play!</button></div>
 
   <script>
-    // 9色のデータ
     const allColors = [
       { name: 'Red', code: '#FF5E5E', word: 'Apple' },
       { name: 'Blue', code: '#54A0FF', word: 'Sky' },
@@ -112,11 +105,19 @@
     let isTransitioning = false;
     let audioCtx = null;
 
-    function loadVoices() {
+    // ネイティブ音声を確実に読み込むための改善
+    function setBestVoice() {
       const voices = window.speechSynthesis.getVoices();
-      nativeVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || voices.find(v => v.lang === 'en-US');
+      // 優先順位: 1. Google(英語) 2. Samantha(Apple) 3. 英語(US) 4. その他英語
+      nativeVoice = voices.find(v => v.name.includes('Google US English')) ||
+                    voices.find(v => v.name.includes('Samantha')) ||
+                    voices.find(v => v.lang === 'en-US') ||
+                    voices.find(v => v.lang.startsWith('en'));
     }
-    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    // iOS/ブラウザの両方に対応する音声読み込み
+    window.speechSynthesis.onvoiceschanged = setBestVoice;
+    setBestVoice();
 
     function playSuccessSound() {
       if (!audioCtx) return;
@@ -124,6 +125,7 @@
       const playTone = (freq, start, dur) => {
         const o = audioCtx.createOscillator();
         const g = audioCtx.createGain();
+        o.type = 'sine';
         o.frequency.setValueAtTime(freq, start);
         g.gain.setValueAtTime(0.1, start);
         g.gain.exponentialRampToValueAtTime(0.01, start + dur);
@@ -135,10 +137,11 @@
     }
 
     function spawnConfetti(el) {
+      const colors = ['#FF4757', '#2ED573', '#1E90FF', '#FFA502', '#FF9FF3'];
       for (let i = 0; i < 30; i++) {
         const c = document.createElement('div');
         c.className = 'confetti';
-        c.style.backgroundColor = ['#FF4757','#2ED573','#1E90FF','#FFA502'][Math.floor(Math.random()*4)];
+        c.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
         c.style.setProperty('--tx', `${(Math.random()-0.5)*250}px`);
         c.style.setProperty('--ty', `${(Math.random()-0.7)*250}px`);
         c.style.left = '50%'; c.style.top = '50%';
@@ -151,19 +154,21 @@
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       if (nativeVoice) u.voice = nativeVoice;
-      u.lang = 'en-US'; u.rate = 0.9;
+      u.lang = 'en-US';
+      u.rate = 0.85; // わずかにゆっくりにして聞き取りやすく
+      u.pitch = 1.0;
       window.speechSynthesis.speak(u);
     }
 
     document.getElementById('start-btn').addEventListener('click', () => {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      setBestVoice(); // クリック時に再確認
       document.getElementById('start-overlay').style.display = 'none';
       nextQuestion();
     });
 
     function nextQuestion() {
       isTransitioning = false;
-      // 9色からランダムに4色選ぶ
       const shuffled = [...allColors].sort(() => 0.5 - Math.random());
       const selectedColors = shuffled.slice(0, 4);
       
@@ -192,16 +197,20 @@
 
     function check(name, el) {
       if (isTransitioning || el.classList.contains('correct')) return;
+      
       if (name === currentTarget.name) {
         isTransitioning = true;
         el.classList.add('correct');
         playSuccessSound();
         spawnConfetti(el);
-        speak(`Hurray! That's ${currentTarget.name}! Just like an ${currentTarget.word}!`);
+        
+        // よりネイティブらしい喜び方と説明
+        speak(`Hurray! Excellent! This is ${currentTarget.name}. Like an ${currentTarget.word}!`);
+        
         setTimeout(nextQuestion, 4000);
       } else {
         el.classList.add('wrong');
-        speak("Try again!");
+        speak("Oops! Try again!");
         setTimeout(() => el.classList.remove('wrong'), 500);
       }
     }
