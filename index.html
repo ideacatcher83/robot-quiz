@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Square Robot Quiz - 8 Colors Edition</title>
+  <title>Square Robot Quiz - 9 Colors Edition</title>
   <style>
     :root {
       --bg-light: #f1f7f9;
@@ -19,71 +19,73 @@
       height: 100vh;
     }
     #quiz-area {
-      height: 18vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 15vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
       background-color: #ffffff; border-bottom: 2px solid var(--border-color);
       position: relative; z-index: 10;
     }
-    #title-text { font-size: 20px; color: #666; margin-bottom: 5px; }
-    #question-text { font-size: clamp(24px, 6vw, 32px); font-weight: bold; color: #000; text-align: center; }
+    #title-text { font-size: 16px; color: #666; margin-bottom: 2px; }
+    #question-text { font-size: clamp(20px, 5vw, 28px); font-weight: bold; color: #000; text-align: center; }
 
-    /* 8色用にグリッドを2列×4行に調整 */
+    /* 9色用に3列×3行に調整 */
     .container { 
       display: grid; 
-      grid-template-columns: 1fr 1fr; 
-      grid-template-rows: repeat(4, 1fr); 
-      height: 82vh; 
-      padding: 10px; 
-      gap: 10px; 
+      grid-template-columns: repeat(3, 1fr); 
+      grid-template-rows: repeat(3, 1fr); 
+      height: 85vh; 
+      padding: 8px; 
+      gap: 8px; 
       box-sizing: border-box;
     }
     .grid-item { 
-      background: white; border-radius: 15px; border: 2px solid var(--border-color);
+      background: white; border-radius: 12px; border: 1.5px solid var(--border-color);
       display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; 
       overflow: visible;
     }
 
-    /* ロボットのサイズを少しコンパクトに調整 */
+    /* 9色だと画面が狭くなるのでロボットをさらに少しコンパクトに */
     .robot-unit {
-      width: 100px; height: 90px;
+      width: 85px; height: 75px;
       background-color: var(--robot-color);
-      border: 3.5px solid #333;
-      border-radius: 20px;
+      border: 3px solid #333;
+      border-radius: 15px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       position: relative; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       cursor: pointer; z-index: 10;
     }
 
     .robot-unit::before {
-      content: ""; position: absolute; top: -12px; width: 30px; height: 8px;
-      background-color: #FFD700; border: 2.5px solid #333; border-radius: 4px;
+      content: ""; position: absolute; top: -10px; width: 25px; height: 6px;
+      background-color: #FFD700; border: 2px solid #333; border-radius: 3px;
     }
-    .ears { position: absolute; width: 120px; height: 30px; display: flex; justify-content: space-between; z-index: -1; }
-    .ear { width: 8px; height: 28px; background-color: var(--robot-color); border: 3px solid #333; border-radius: 4px; }
-    .feet { position: absolute; bottom: -8px; width: 45px; display: flex; justify-content: space-between; }
-    .foot { width: 10px; height: 6px; background-color: #444; border-radius: 2px; }
-    .eye-row { display: flex; gap: 12px; margin-bottom: 6px; }
-    .eye { width: 20px; height: 20px; background-color: #000; border-radius: 50%; position: relative; }
-    .eye::after { content: ""; position: absolute; top: 2px; left: 3px; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
-    .mouth { width: 25px; height: 5px; background-color: #333; border-radius: 3px; }
+    .ears { position: absolute; width: 100px; height: 25px; display: flex; justify-content: space-between; z-index: -1; }
+    .ear { width: 6px; height: 22px; background-color: var(--robot-color); border: 2.5px solid #333; border-radius: 3px; }
+    .feet { position: absolute; bottom: -7px; width: 35px; display: flex; justify-content: space-between; }
+    .foot { width: 8px; height: 5px; background-color: #444; border-radius: 1.5px; }
+    .eye-row { display: flex; gap: 10px; margin-bottom: 5px; }
+    .eye { width: 16px; height: 16px; background-color: #000; border-radius: 50%; position: relative; }
+    /* Whiteのロボットだけ瞳を少し見えやすく */
+    .robot-unit[style*="#FFFFFF"] .eye { border: 0.5px solid #333; }
+    .eye::after { content: ""; position: absolute; top: 2px; left: 2.5px; width: 4.5px; height: 4.5px; background: #fff; border-radius: 50%; }
+    .mouth { width: 20px; height: 4px; background-color: #333; border-radius: 2px; }
 
     /* アニメーション */
-    .robot-unit.correct { transform: scale(1.1); box-shadow: 0 0 25px var(--robot-color); }
+    .robot-unit.correct { transform: scale(1.15); box-shadow: 0 0 20px var(--robot-color); }
     .robot-unit.correct .eye { background: transparent; }
     .robot-unit.correct .eye::before {
-      content: ""; width: 20px; height: 20px; border-top: 4px solid #000; border-radius: 50%; position: absolute; top: 6px;
+      content: ""; width: 16px; height: 16px; border-top: 4px solid #000; border-radius: 50%; position: absolute; top: 4px;
     }
-    .robot-unit.correct .mouth { height: 12px; border-radius: 0 0 12px 12px; }
+    .robot-unit.correct .mouth { height: 10px; border-radius: 0 0 10px 10px; }
 
     .robot-unit.wrong { animation: shake 0.4s; }
     .robot-unit.wrong .eye::before, .robot-unit.wrong .eye-cross-inner {
-      content: ""; position: absolute; width: 22px; height: 4px; background: #000; transform: rotate(45deg); top: 8px; left: -1px;
+      content: ""; position: absolute; width: 18px; height: 3.5px; background: #000; transform: rotate(45deg); top: 6px; left: -1px;
     }
     .robot-unit.wrong .eye-cross-inner { transform: rotate(-45deg); }
 
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 
     .confetti {
-      position: absolute; width: 10px; height: 10px; pointer-events: none; z-index: 100;
+      position: absolute; width: 8px; height: 8px; pointer-events: none; z-index: 100;
       animation: confetti-fall 1.5s ease-out forwards;
     }
     @keyframes confetti-fall {
@@ -96,8 +98,8 @@
       display: flex; align-items: center; justify-content: center; z-index: 2000;
     }
     #start-btn {
-      padding: 20px 60px; background: #FF4757; color: white; border: none; border-radius: 50px;
-      font-size: 32px; font-weight: bold; cursor: pointer; box-shadow: 0 8px 0 #cf3544;
+      padding: 15px 50px; background: #FF4757; color: white; border: none; border-radius: 40px;
+      font-size: 28px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #cf3544;
     }
   </style>
 </head>
@@ -115,7 +117,7 @@
   </div>
 
   <script>
-    // 8色にデータを追加
+    // 9色目「White」を追加
     const colorData = [
       { name: 'Red', code: '#FF5E5E', word: 'Apple' },
       { name: 'Blue', code: '#54A0FF', word: 'Sky' },
@@ -124,7 +126,8 @@
       { name: 'Orange', code: '#FF9F43', word: 'Orange' },
       { name: 'Purple', code: '#A55EEF', word: 'Grapes' },
       { name: 'Pink', code: '#FF9FF3', word: 'Peach' },
-      { name: 'Brown', code: '#834C32', word: 'Chocolate' }
+      { name: 'Brown', code: '#834C32', word: 'Chocolate' },
+      { name: 'White', code: '#FFFFFF', word: 'Cloud' }
     ];
 
     let currentTarget = null;
@@ -161,12 +164,12 @@
 
     function spawnConfetti(parentElement) {
       const colors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#FF69B4'];
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 25; i++) {
         const confetti = document.createElement('div');
         confetti.className = 'confetti';
         confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        const tx = (Math.random() - 0.5) * 250;
-        const ty = (Math.random() - 0.8) * 250;
+        const tx = (Math.random() - 0.5) * 200;
+        const ty = (Math.random() - 0.8) * 200;
         confetti.style.setProperty('--tx', `${tx}px`);
         confetti.style.setProperty('--ty', `${ty}px`);
         confetti.style.left = '50%'; confetti.style.top = '50%';
@@ -188,7 +191,7 @@
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       document.getElementById('start-overlay').style.display = 'none';
       createRobots();
-      setTimeout(nextQuestion, 6000);
+      setTimeout(nextQuestion, 500);
     });
 
     function createRobots() {
@@ -198,7 +201,7 @@
         const item = document.createElement('div');
         item.className = 'grid-item';
         item.innerHTML = `
-          <div style="font-weight:bold; margin-bottom:5px; font-size:14px;">${data.name.toUpperCase()}</div>
+          <div style="font-weight:bold; margin-bottom:4px; font-size:12px;">${data.name.toUpperCase()}</div>
           <div class="robot-unit" style="--robot-color: ${data.code}" onclick="checkAnswer('${data.name}', this)">
             <div class="ears"><div class="ear"></div><div class="ear"></div></div>
             <div class="eye-row">
@@ -230,7 +233,6 @@
         playSuccessSound();
         spawnConfetti(element);
         
-        // 単語の前に a/an を使い分ける
         const article = ['Apple', 'Orange'].includes(currentTarget.word) ? 'an' : 'a';
         speak(`Hurray! Excellent! That's ${currentTarget.name}. Just like ${article} ${currentTarget.word}!`);
         
