@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Square Robot Quiz - Compact Layout</title>
+  <title>Color Robot Quiz - Slim Edition</title>
   <style>
     :root {
       --bg-light: #f1f7f9;
@@ -19,122 +19,107 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
+      -webkit-touch-callout: none; /* スマホの長押しメニューを禁止 */
+      user-select: none;
     }
 
-    /* 全体を80vhに収め、さらにスリムに */
+    /* 全体を75vhに収め、さらにコンパクトに */
     #game-wrapper {
       width: 95vw;
-      height: 80vh;
-      max-width: 380px; 
+      height: 75vh;
+      max-width: 360px; 
       display: flex;
       flex-direction: column;
       background: white;
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       overflow: hidden;
       border: 2px solid var(--border-color);
     }
 
     #quiz-area {
-      flex: 0 0 18%; /* ヘッダーを少し低く */
+      flex: 0 0 16%; /* ヘッダーをさらに低く */
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       background-color: #ffffff;
       border-bottom: 1px solid var(--border-color);
     }
-    #title-text { font-size: 11px; color: #999; letter-spacing: 1px; }
-    #question-text { font-size: clamp(18px, 5vw, 22px); font-weight: bold; color: #333; margin-top: 3px; }
+    #question-text { font-size: clamp(16px, 4.5vw, 20px); font-weight: bold; color: #333; }
 
     .container { 
       flex: 1;
       display: grid; 
       grid-template-columns: repeat(3, 1fr); 
       grid-template-rows: repeat(3, 1fr); 
-      padding: 5px; /* 外側の余白を削減 */
-      gap: 5px; /* 隙間をさらに狭く */
+      padding: 4px;
+      gap: 4px;
     }
 
     .grid-item { 
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       position: relative;
-      background: #fafafa; /* 枠を少し分かりやすく */
-      border-radius: 10px;
-      border: 1px solid #eee;
-      height: 100%; /* 親のグリッドセルいっぱいに広げる */
+      background: #fafafa;
+      border-radius: 8px;
     }
 
-    /* ロボット自体の大きさは維持しつつ、配置を最適化 */
+    /* ロボットのサイズをさらにスリム化 */
     .robot-unit {
-      width: 68px; height: 60px;
+      width: 60px; height: 52px;
       background-color: var(--robot-color);
       border: 2.5px solid #333;
-      border-radius: 12px;
+      border-radius: 10px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      position: relative; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative; transition: all 0.3s;
       cursor: pointer; z-index: 5;
-      margin-top: 5px; /* 上のテキストとの距離 */
     }
 
     .robot-unit::before {
-      content: ""; position: absolute; top: -8px; width: 20px; height: 5px;
-      background-color: #FFD700; border: 2px solid #333; border-radius: 3px;
+      content: ""; position: absolute; top: -7px; width: 18px; height: 4px;
+      background-color: #FFD700; border: 2px solid #333; border-radius: 2px;
     }
-    .ears { position: absolute; width: 82px; height: 20px; display: flex; justify-content: space-between; z-index: -1; }
-    .ear { width: 5px; height: 18px; background-color: var(--robot-color); border: 2.2px solid #333; border-radius: 3px; }
-    .feet { position: absolute; bottom: -6px; width: 28px; display: flex; justify-content: space-between; }
-    .foot { width: 7px; height: 4px; background-color: #444; border-radius: 1px; }
+    .ears { position: absolute; width: 75px; height: 15px; display: flex; justify-content: space-between; z-index: -1; }
+    .ear { width: 4.5px; height: 16px; background-color: var(--robot-color); border: 2.2px solid #333; border-radius: 2px; }
+    .feet { position: absolute; bottom: -5px; width: 25px; display: flex; justify-content: space-between; }
+    .foot { width: 6px; height: 3px; background-color: #444; border-radius: 1px; }
     
-    .eye-row { display: flex; gap: 10px; margin-bottom: 4px; }
-    .eye { width: 14px; height: 14px; background-color: #000; border-radius: 50%; position: relative; }
-    .eye::after { content: ""; position: absolute; top: 1.5px; left: 2px; width: 4px; height: 4px; background: #fff; border-radius: 50%; }
-    .mouth { width: 18px; height: 3px; background-color: #333; border-radius: 2px; }
+    .eye-row { display: flex; gap: 8px; margin-bottom: 3px; }
+    .eye { width: 12px; height: 12px; background-color: #000; border-radius: 50%; position: relative; }
+    .eye::after { content: ""; position: absolute; top: 1.5px; left: 1.5px; width: 3.5px; height: 3.5px; background: #fff; border-radius: 50%; }
+    .mouth { width: 15px; height: 2.5px; background-color: #333; border-radius: 2px; }
 
-    /* アニメーション演出 */
-    .robot-unit.correct { transform: scale(1.1); box-shadow: 0 0 15px var(--robot-color); }
+    /* アニメーション */
+    .robot-unit.correct { transform: scale(1.1); }
     .robot-unit.correct .eye { background: transparent; }
     .robot-unit.correct .eye::before {
-      content: ""; width: 14px; height: 14px; border-top: 3.5px solid #000; border-radius: 50%; position: absolute; top: 3px;
+      content: ""; width: 12px; height: 12px; border-top: 3px solid #000; border-radius: 50%; position: absolute; top: 3px;
     }
-    .robot-unit.correct .mouth { height: 8px; border-radius: 0 0 8px 8px; }
-
     .robot-unit.wrong { animation: shake 0.4s; }
-    .robot-unit.wrong .eye::before, .robot-unit.wrong .eye-cross-inner {
-      content: ""; position: absolute; width: 16px; height: 3px; background: #000; transform: rotate(45deg); top: 5px; left: -1px;
-    }
-    .robot-unit.wrong .eye-cross-inner { transform: rotate(-45deg); }
-
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-
-    .confetti {
-      position: absolute; width: 6px; height: 6px; pointer-events: none; z-index: 100;
-      animation: confetti-fall 1.5s ease-out forwards;
-    }
-    @keyframes confetti-fall {
-      0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
-      100% { transform: translate(var(--tx), var(--ty)) rotate(720deg); opacity: 0; }
-    }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
     #start-overlay {
-      position: fixed; inset: 0; background: rgba(255,255,255,0.95);
+      position: fixed; inset: 0; background: rgba(255,255,255,0.98);
       display: flex; align-items: center; justify-content: center; z-index: 2000;
     }
     #start-btn {
-      padding: 15px 40px; background: #FF4757; color: white; border: none; border-radius: 30px;
+      padding: 15px 45px; background: #FF4757; color: white; border: none; border-radius: 50px;
       font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 0 #cf3544;
+      touch-action: manipulation; /* スマホのタップ反応を速くする */
     }
+
+    .confetti { position: absolute; width: 5px; height: 5px; pointer-events: none; z-index: 100; animation: fall 1.5s forwards; }
+    @keyframes fall { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
   </style>
 </head>
 <body>
 
   <div id="game-wrapper">
     <div id="quiz-area">
-      <div id="title-text">Color Robot Quiz</div>
       <div id="question-text">Tap Start!</div>
     </div>
     <div class="container" id="robot-grid"></div>
   </div>
 
   <div id="start-overlay">
-    <button id="start-btn">Let's Play!</button>
+    <button id="start-btn" id="real-start-btn">Let's Play!</button>
   </div>
 
   <script>
@@ -155,6 +140,21 @@
     let isTransitioning = false;
     let audioCtx = null;
 
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      // 空の音を鳴らしてiOS等のロックを解除
+      const buffer = audioCtx.createBuffer(1, 1, 22050);
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioCtx.destination);
+      source.start();
+    }
+
     function loadVoices() {
       const voices = window.speechSynthesis.getVoices();
       nativeVoice = voices.find(v => v.name.includes('Google US English')) ||
@@ -166,7 +166,7 @@
 
     function playSuccessSound() {
       if (!audioCtx) return;
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      initAudio();
       const playTone = (freq, startTime, duration) => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -184,12 +184,12 @@
 
     function spawnConfetti(parentElement) {
       const colors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#FF69B4'];
-      for (let i = 0; i < 18; i++) {
+      for (let i = 0; i < 15; i++) {
         const confetti = document.createElement('div');
         confetti.className = 'confetti';
         confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        const tx = (Math.random() - 0.5) * 120;
-        const ty = (Math.random() - 0.8) * 120;
+        const tx = (Math.random() - 0.5) * 100;
+        const ty = (Math.random() - 0.8) * 100;
         confetti.style.setProperty('--tx', `${tx}px`);
         confetti.style.setProperty('--ty', `${ty}px`);
         confetti.style.left = '50%'; confetti.style.top = '50%';
@@ -207,12 +207,14 @@
       window.speechSynthesis.speak(uttr);
     }
 
-    document.getElementById('start-btn').addEventListener('click', () => {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Startボタンの処理を強化
+    document.getElementById('start-btn').addEventListener('click', function(e) {
+      initAudio(); // 音声コンテキストの開始
+      loadVoices();
       document.getElementById('start-overlay').style.display = 'none';
       createRobots();
-      setTimeout(nextQuestion, 6000);
-    });
+      setTimeout(nextQuestion, 500);
+    }, { once: true });
 
     function createRobots() {
       const grid = document.getElementById('robot-grid');
@@ -221,51 +223,4 @@
         const item = document.createElement('div');
         item.className = 'grid-item';
         item.innerHTML = `
-          <div style="font-weight:bold; font-size:9px; color:#888;">${data.name.toUpperCase()}</div>
-          <div class="robot-unit" style="--robot-color: ${data.code}" onclick="checkAnswer('${data.name}', this)">
-            <div class="ears"><div class="ear"></div><div class="ear"></div></div>
-            <div class="eye-row">
-              <div class="eye"><div class="eye-cross-inner"></div></div>
-              <div class="eye"><div class="eye-cross-inner"></div></div>
-            </div>
-            <div class="mouth"></div>
-            <div class="feet"><div class="foot"></div><div class="foot"></div></div>
-          </div>
-        `;
-        grid.appendChild(item);
-      });
-    }
-
-    function nextQuestion() {
-      isTransitioning = false;
-      const randomColor = colorData[Math.floor(Math.random() * colorData.length)];
-      currentTarget = randomColor;
-      document.getElementById('question-text').innerText = `Where is ${currentTarget.name}?`;
-      speak(`Where is ${currentTarget.name}?`);
-    }
-
-    function checkAnswer(selectedName, element) {
-      if (isTransitioning || element.classList.contains('correct')) return;
-
-      if (selectedName === currentTarget.name) {
-        isTransitioning = true;
-        element.classList.add('correct');
-        playSuccessSound();
-        spawnConfetti(element);
-        
-        const article = ['Apple', 'Orange'].includes(currentTarget.word) ? 'an' : 'a';
-        speak(`Hurray! Excellent! That's ${currentTarget.name}. Just like ${article} ${currentTarget.word}!`);
-        
-        setTimeout(() => {
-          element.classList.remove('correct');
-          nextQuestion();
-        }, 4000);
-      } else {
-        element.classList.add('wrong');
-        speak("Oops! Try again.");
-        setTimeout(() => element.classList.remove('wrong'), 500);
-      }
-    }
-  </script>
-</body>
-</html>
+          <div
