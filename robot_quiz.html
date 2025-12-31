@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Square Robot Quiz - Fix Sound & Confetti</title>
+  <style>
+    :root {
+      --bg-light: #f1f7f9;
+      --border-color: #d1d1d1;
+    }
+    body {
+      background-color: var(--bg-light);
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Arial Round MT Bold', 'Helvetica', sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #quiz-area {
+      height: 20vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background-color: #ffffff; border-bottom: 2px solid var(--border-color);
+      position: relative; z-index: 10;
+    }
+    #title-text { font-size: 24px; color: #666; margin-bottom: 5px; }
+    #question-text { font-size: 32px; font-weight: bold; color: #000; }
+
+    .container { 
+      display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; 
+      height: 80vh; padding: 10px; gap: 10px; position: relative;
+    }
+    .grid-item { 
+      background: white; border-radius: 20px; border: 2px solid var(--border-color);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; 
+      overflow: visible; /* 紙吹雪が外に見えるように */
+    }
+
+    .robot-unit {
+      width: 120px; height: 110px;
+      background-color: var(--robot-color);
+      border: 4px solid #333;
+      border-radius: 25px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer; z-index: 10;
+    }
+
+    /* ロボットの装飾 */
+    .robot-unit::before {
+      content: ""; position: absolute; top: -14px; width: 40px; height: 10px;
+      background-color: #FFD700; border: 3px solid #333; border-radius: 5px;
+    }
+    .ears { position: absolute; width: 144px; height: 40px; display: flex; justify-content: space-between; z-index: -1; }
+    .ear { width: 10px; height: 35px; background-color: var(--robot-color); border: 3.5px solid #333; border-radius: 5px; }
+    .feet { position: absolute; bottom: -10px; width: 50px; display: flex; justify-content: space-between; }
+    .foot { width: 12px; height: 8px; background-color: #444; border-radius: 2px; }
+    .eye-row { display: flex; gap: 15px; margin-bottom: 8px; }
+    .eye { width: 24px; height: 24px; background-color: #000; border-radius: 50%; position: relative; }
+    .eye::after { content: ""; position: absolute; top: 3px; left: 4px; width: 7px; height: 7px; background: #fff; border-radius: 50%; }
+    .mouth { width: 30px; height: 6px; background-color: #333; border-radius: 3px; }
+
+    /* アニメーション */
+    .robot-unit.correct { transform: scale(1.1); box-shadow: 0 0 30px var(--robot-color); }
+    .robot-unit.correct .eye { background: transparent; }
+    .robot-unit.correct .eye::after { display: none; }
+    .robot-unit.correct .eye::before {
+      content: ""; width: 24px; height: 24px; border-top: 5px solid #000; border-radius: 50%; position: absolute; top: 8px;
+    }
+    .robot-unit.correct .mouth { height: 15px; border-radius: 0 0 15px 15px; }
+
+    .robot-unit.wrong { animation: shake 0.4s; }
+    .robot-unit.wrong .eye { background: transparent; }
+    .robot-unit.wrong .eye::after { display: none; }
+    .robot-unit.wrong .eye::before, .robot-unit.wrong .eye-cross-inner {
+      content: ""; position: absolute; width: 26px; height: 5px; background: #000; transform: rotate(45deg); top: 10px; left: -1px;
+    }
+    .robot-unit.wrong .eye-cross-inner { transform: rotate(-45deg); }
+
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+    /* 紙吹雪 CSS アニメーション */
+    .confetti {
+      position: absolute; width: 12px; height: 12px; pointer-events: none; z-index: 100;
+      animation: confetti-fall 1.5s ease-out forwards;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) rotate(720deg); opacity: 0; }
+    }
+
+    #start-overlay {
+      position: fixed; inset: 0; background: rgba(255,255,255,0.95);
+      display: flex; align-items: center; justify-content: center; z-index: 2000;
+    }
+    #start-btn {
+      padding: 25px 70px; background: #FF4757; color: white; border: none; border-radius: 50px;
+      font-size: 36px; font-weight: bold; cursor: pointer; box-shadow: 0 8px 0 #cf3544;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="quiz-area">
+    <div id="title-text">Robot Color Quiz</div>
+    <div id="question-text">Tap Start!</div>
+  </div>
+
+  <div class="container" id="robot-grid"></div>
+
+  <div id="start-overlay">
+    <button id="start-btn">Let's Play!</button>
+  </div>
+
+  <script>
+    const colorData = [
+      { name: 'Red', code: '#FF5E5E', word: 'Apple' },
+      { name: 'Blue', code: '#54A0FF', word: 'Sky' },
+      { name: 'Yellow', code: '#FFEB3B', word: 'Banana' },
+      { name: 'Green', code: '#7BED9F', word: 'Leaf' }
+    ];
+
+    let currentTarget = null;
+    let nativeVoice = null;
+    let isTransitioning = false;
+    let audioCtx = null;
+
+    // 音声の準備
+    function loadVoices() {
+      const voices = window.speechSynthesis.getVoices();
+      nativeVoice = voices.find(v => v.name.includes('Google US English')) ||
+                    voices.find(v => v.lang === 'en-US' && v.name.includes('Samantha')) ||
+                    voices.find(v => v.lang === 'en-US');
+    }
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    // サウンド再生関数
+    function playSuccessSound() {
+      if (!audioCtx) return;
+      // ブラウザ制限対策：サスペンド状態なら再開
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
+      const playTone = (freq, startTime, duration) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0.1, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+
+      const now = audioCtx.currentTime;
+      playTone(523.25, now, 0.2); 
+      playTone(659.25, now + 0.1, 0.2); 
+      playTone(783.99, now + 0.2, 0.2); 
+      playTone(1046.50, now + 0.3, 0.4); 
+    }
+
+    // 紙吹雪を飛ばす関数
+    function spawnConfetti(x, y, parentElement) {
+      const colors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#FF69B4'];
+      for (let i = 0; i < 40; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        // 飛び散る方向をランダムに計算
+        const tx = (Math.random() - 0.5) * 300;
+        const ty = (Math.random() - 0.8) * 300; // 上方向に多く飛ぶように
+        confetti.style.setProperty('--tx', `${tx}px`);
+        confetti.style.setProperty('--ty', `${ty}px`);
+        
+        // 出現位置をロボットの中心に
+        confetti.style.left = '50%';
+        confetti.style.top = '50%';
+        
+        parentElement.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 1500);
+      }
+    }
+
+    function speak(text) {
+      window.speechSynthesis.cancel();
+      const uttr = new SpeechSynthesisUtterance(text);
+      if (nativeVoice) uttr.voice = nativeVoice;
+      uttr.lang = 'en-US';
+      uttr.rate = 0.9;
+      window.speechSynthesis.speak(uttr);
+    }
+
+    // Startボタンにリスナーを登録
+    document.getElementById('start-btn').addEventListener('click', () => {
+      // ユーザーの操作でオーディオを開始（ブラウザ制限の解除）
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      document.getElementById('start-overlay').style.display = 'none';
+      createRobots();
+      setTimeout(nextQuestion, 500);
+    });
+
+    function createRobots() {
+      const grid = document.getElementById('robot-grid');
+      grid.innerHTML = '';
+      colorData.forEach(data => {
+        const item = document.createElement('div');
+        item.className = 'grid-item';
+        item.innerHTML = `
+          <div style="font-weight:bold; margin-bottom:10px; font-size:18px;">${data.name.toUpperCase()}</div>
+          <div class="robot-unit" style="--robot-color: ${data.code}" onclick="checkAnswer('${data.name}', this)">
+            <div class="ears"><div class="ear"></div><div class="ear"></div></div>
+            <div class="eye-row">
+              <div class="eye"><div class="eye-cross-inner"></div></div>
+              <div class="eye"><div class="eye-cross-inner"></div></div>
+            </div>
+            <div class="mouth"></div>
+            <div class="feet"><div class="foot"></div><div class="foot"></div></div>
+          </div>
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    function nextQuestion() {
+      isTransitioning = false;
+      const randomColor = colorData[Math.floor(Math.random() * colorData.length)];
+      currentTarget = randomColor;
+      document.getElementById('question-text').innerText = `Where is ${currentTarget.name}?`;
+      speak(`Where is ${currentTarget.name}?`);
+    }
+
+    function checkAnswer(selectedName, element) {
+      if (isTransitioning || element.classList.contains('correct')) return;
+
+      if (selectedName === currentTarget.name) {
+        isTransitioning = true;
+        element.classList.add('correct');
+        
+        // 音と紙吹雪を実行
+        playSuccessSound();
+        spawnConfetti(0, 0, element); 
+        
+        speak(`Hurray! Excellent! That's ${currentTarget.name}. Just like an ${currentTarget.word}!`);
+        
+        setTimeout(() => {
+          element.classList.remove('correct');
+          nextQuestion();
+        }, 6000); // 説明が少し長いので4秒に延長
+      } else {
+        element.classList.add('wrong');
+        speak("Oops! Try again.");
+        setTimeout(() => element.classList.remove('wrong'), 500);
+      }
+    }
+  </script>
+</body>
+</html>
