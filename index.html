@@ -213,7 +213,7 @@
       loadVoices();
       document.getElementById('start-overlay').style.display = 'none';
       createRobots();
-      setTimeout(nextQuestion, 500);
+      setTimeout(nextQuestion, 6000);
     }, { once: true });
 
     function createRobots() {
@@ -223,4 +223,50 @@
         const item = document.createElement('div');
         item.className = 'grid-item';
         item.innerHTML = `
-          <div
+          <div style="font-weight:bold; font-size:8px; color:#aaa; margin-bottom:2px;">${data.name.toUpperCase()}</div>
+          <div class="robot-unit" style="--robot-color: ${data.code}" onclick="checkAnswer('${data.name}', this)">
+            <div class="ears"><div class="ear"></div><div class="ear"></div></div>
+            <div class="eye-row">
+              <div class="eye"></div><div class="eye"></div>
+            </div>
+            <div class="mouth"></div>
+            <div class="feet"><div class="foot"></div><div class="foot"></div></div>
+          </div>
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    function nextQuestion() {
+      isTransitioning = false;
+      const randomColor = colorData[Math.floor(Math.random() * colorData.length)];
+      currentTarget = randomColor;
+      document.getElementById('question-text').innerText = `Where is ${currentTarget.name}?`;
+      speak(`Where is ${currentTarget.name}?`);
+    }
+
+    function checkAnswer(selectedName, element) {
+      if (isTransitioning || element.classList.contains('correct')) return;
+
+      if (selectedName === currentTarget.name) {
+        isTransitioning = true;
+        element.classList.add('correct');
+        playSuccessSound();
+        spawnConfetti(element);
+        
+        const article = ['Apple', 'Orange'].includes(currentTarget.word) ? 'an' : 'a';
+        speak(`Hurray! Excellent! That's ${currentTarget.name}. Just like ${article} ${currentTarget.word}!`);
+        
+        setTimeout(() => {
+          element.classList.remove('correct');
+          nextQuestion();
+        }, 4000);
+      } else {
+        element.classList.add('wrong');
+        speak("Oops! Try again.");
+        setTimeout(() => element.classList.remove('wrong'), 500);
+      }
+    }
+  </script>
+</body>
+</html>
