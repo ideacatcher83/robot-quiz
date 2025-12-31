@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>9 Color Robot Quiz - Compact</title>
+  <title>9 Color Robot Quiz - Word Fixed</title>
   <style>
     :root {
       --bg-light: #f1f7f9;
@@ -12,14 +12,13 @@
     body {
       background-color: var(--bg-light);
       margin: 0;
-      overflow: hidden; /* 画面がスクロールしないように固定 */
+      overflow: hidden;
       font-family: 'Arial Round MT Bold', 'Helvetica', sans-serif;
       display: flex;
       flex-direction: column;
-      height: 100vh; /* 画面全体の高さを100%に */
+      height: 100vh;
     }
     
-    /* クイズエリアの高さをさらに低く（15%）調整 */
     #quiz-area {
       height: 15vh; 
       display: flex; 
@@ -32,14 +31,13 @@
       flex-shrink: 0;
     }
     #question-text { 
-      font-size: clamp(20px, 6vw, 28px); /* 画面サイズに合わせて自動調整 */
+      font-size: clamp(20px, 6vw, 28px);
       font-weight: bold; 
       color: #000; 
       text-align: center; 
       margin: 0;
     }
 
-    /* ロボット表示エリアを画面の下部いっぱいに（85%） */
     .container { 
       display: grid; 
       grid-template-columns: 1fr 1fr; 
@@ -63,7 +61,6 @@
       padding: 5px;
     }
 
-    /* 文字とロボットの間隔を狭くして収まりを良くする */
     .color-label { 
       font-weight: bold; 
       font-size: 16px; 
@@ -72,7 +69,7 @@
     }
 
     .robot-unit {
-      width: clamp(80px, 25vw, 110px); /* 画面幅に合わせて伸縮 */
+      width: clamp(80px, 25vw, 110px);
       height: clamp(75px, 22vw, 100px);
       background-color: var(--robot-color);
       border: 3.5px solid #333;
@@ -87,7 +84,6 @@
       z-index: 5;
     }
 
-    /* 装飾パーツのサイズも微調整 */
     .robot-unit::before {
       content: ""; position: absolute; top: -10px; width: 30px; height: 7px;
       background-color: #FFD700; border: 2.5px solid #333; border-radius: 4px;
@@ -102,7 +98,6 @@
     .eye::after { content: ""; position: absolute; top: 2px; left: 3px; width: 5px; height: 5px; background: #fff; border-radius: 50%; }
     .mouth { width: 24px; height: 5px; background-color: #333; border-radius: 3px; }
 
-    /* 正解・不正解演出 */
     .robot-unit.correct { transform: scale(1.05); box-shadow: 0 0 20px var(--robot-color); }
     .robot-unit.correct .eye { background: transparent; }
     .robot-unit.correct .eye::before { content: ""; width: 20px; height: 20px; border-top: 5px solid #000; border-radius: 50%; position: absolute; top: 7px; }
@@ -110,14 +105,11 @@
     .robot-unit.wrong { animation: shake 0.4s; }
     @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 
-    /* 紙吹雪 */
     .confetti { position: absolute; width: 8px; height: 8px; pointer-events: none; z-index: 100; animation: fall 1.5s ease-out forwards; }
     @keyframes fall { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) rotate(720deg); opacity: 0; } }
 
-    /* スタート画面 */
     #start-overlay { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 2000; }
     #start-btn { padding: 15px 40px; background: #FF4757; color: white; border: none; border-radius: 50px; font-size: 26px; font-weight: bold; box-shadow: 0 5px 0 #cf3544; }
-    #start-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #cf3544; }
   </style>
 </head>
 <body>
@@ -146,7 +138,7 @@
 
     function loadVoices() {
       const voices = window.speechSynthesis.getVoices();
-      nativeVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || voices.find(v => v.lang === 'en-US');
+      nativeVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Google') || v.name.includes('Samantha'))) || voices.find(v => v.lang === 'en-US');
     }
     if (speechSynthesis.onvoiceschanged !== undefined) {
       speechSynthesis.onvoiceschanged = loadVoices;
@@ -232,8 +224,9 @@
         el.classList.add('correct');
         playSuccessSound();
         spawnConfetti(el);
-        speak(`Hurray! That's ${currentTarget.name}!`);
-        setTimeout(nextQuestion, 3000);
+        // ここを修正しました！wordを読み上げます。
+        speak(`Hurray! That's ${currentTarget.name}. Just like an ${currentTarget.word}!`);
+        setTimeout(nextQuestion, 4000);
       } else {
         el.classList.add('wrong');
         speak("Oops! Try again.");
