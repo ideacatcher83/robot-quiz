@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>9 Color Robot Quiz - Native Voice Fix</title>
+  <title>9 Color Robot Quiz - Super Native Voice</title>
   <style>
     :root {
       --bg-light: #f1f7f9;
@@ -83,7 +83,7 @@
 </head>
 <body>
 
-  <div id="quiz-area"><div id="question-text">Are you ready?</div></div>
+  <div id="quiz-area"><div id="question-text">Tap Start!</div></div>
   <div class="container" id="robot-grid"></div>
   <div id="start-overlay"><button id="start-btn">Let's Play!</button></div>
 
@@ -105,17 +105,17 @@
     let isTransitioning = false;
     let audioCtx = null;
 
-    // ネイティブ音声を確実に読み込むための改善
     function setBestVoice() {
       const voices = window.speechSynthesis.getVoices();
-      // 優先順位: 1. Google(英語) 2. Samantha(Apple) 3. 英語(US) 4. その他英語
+      // 高品質な順に検索
       nativeVoice = voices.find(v => v.name.includes('Google US English')) ||
                     voices.find(v => v.name.includes('Samantha')) ||
+                    voices.find(v => v.name.includes('Alex')) ||
+                    voices.find(v => v.lang === 'en-US' && v.name.includes('Enhanced')) ||
                     voices.find(v => v.lang === 'en-US') ||
                     voices.find(v => v.lang.startsWith('en'));
     }
 
-    // iOS/ブラウザの両方に対応する音声読み込み
     window.speechSynthesis.onvoiceschanged = setBestVoice;
     setBestVoice();
 
@@ -153,16 +153,17 @@
     function speak(text) {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      if (nativeVoice) u.voice = nativeVoice;
+      if (!nativeVoice) setBestVoice(); // 発話直前に再確認
+      u.voice = nativeVoice;
       u.lang = 'en-US';
-      u.rate = 0.85; // わずかにゆっくりにして聞き取りやすく
-      u.pitch = 1.0;
+      u.rate = 0.85; // 子供向けに少しだけゆっくり
+      u.pitch = 1.1; // 少し明るい声に
       window.speechSynthesis.speak(u);
     }
 
     document.getElementById('start-btn').addEventListener('click', () => {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      setBestVoice(); // クリック時に再確認
+      setBestVoice();
       document.getElementById('start-overlay').style.display = 'none';
       nextQuestion();
     });
@@ -187,33 +188,4 @@
             <div class="feet"><div class="foot"></div><div class="foot"></div></div>
           </div>
         `;
-        grid.appendChild(div);
-      });
-
-      currentTarget = selectedColors[Math.floor(Math.random() * 4)];
-      document.getElementById('question-text').innerText = `Where is ${currentTarget.name}?`;
-      speak(`Where is ${currentTarget.name}?`);
-    }
-
-    function check(name, el) {
-      if (isTransitioning || el.classList.contains('correct')) return;
-      
-      if (name === currentTarget.name) {
-        isTransitioning = true;
-        el.classList.add('correct');
-        playSuccessSound();
-        spawnConfetti(el);
-        
-        // よりネイティブらしい喜び方と説明
-        speak(`Hurray! Excellent! This is ${currentTarget.name}. Like an ${currentTarget.word}!`);
-        
-        setTimeout(nextQuestion, 4000);
-      } else {
-        el.classList.add('wrong');
-        speak("Oops! Try again!");
-        setTimeout(() => el.classList.remove('wrong'), 500);
-      }
-    }
-  </script>
-</body>
-</html>
+        grid
